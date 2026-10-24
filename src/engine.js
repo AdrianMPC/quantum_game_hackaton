@@ -83,13 +83,6 @@ export function validateLevel(level) {
   return errors;
 }
 
-// «Coincidencia de secuencia»: classical position match, not a probability.
-export function match(input, target) {
-  if (!target.length) return null;
-  const hits = target.filter((m, i) => input[i] === m).length;
-  return Math.round((hits / target.length) * 1000) / 10;
-}
-
 export function score(cfg, { seconds, plays, scans }) {
   return Math.max(0, Math.round(cfg.baseScore - seconds * cfg.timePenaltyPerSecond - plays * cfg.playPenalty - scans * cfg.scannerPenalty));
 }

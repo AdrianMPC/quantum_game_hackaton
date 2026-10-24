@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
-import { validateLevel, match, score, STARTS } from '../src/engine.js';
+import { validateLevel, score, STARTS } from '../src/engine.js';
+import { dailyLevel, recordSolve, currentStreak, todayKey, puzzleNumber } from '../src/daily.js';
 import { createGame, setMove, play, scan, settle, rotate, selectStart, reset, selectedStart } from '../src/game.js';
 
 const data = JSON.parse(readFileSync(new URL('../levels.json', import.meta.url)));
@@ -18,11 +19,6 @@ test('broken level reports errors without throwing', () => {
   assert.ok(validateLevel({ ...lvl1, goal: [9, 9] }).length > 0);
   assert.ok(validateLevel({ ...lvl1, targetSequence: ['UP_LEFT', 'UP_LEFT', 'UP_LEFT', 'UP_LEFT'] }).length > 0);
   assert.ok(validateLevel(null).length > 0);
-});
-
-test('match follows spec example', () => {
-  assert.equal(match(['UP_LEFT', 'DOWN_LEFT', 'DOWN_RIGHT'], ['UP_LEFT', 'UP_RIGHT', 'DOWN_RIGHT']), 66.7);
-  assert.equal(match([], []), null);
 });
 
 test('score clamps at zero', () => {
@@ -80,6 +76,30 @@ test('counters increment once per action; incomplete sequence is rejected; reset
   assert.deepEqual(g.result, { seconds: 30, plays: 2, scans: 1, score: 1000 - 60 - 50 - 10 });
   reset(g);
   assert.deepEqual([g.plays, g.scans, g.rotation, g.status, g.seq], [0, 0, 0, 'READY', [null, null, null]]);
+});
+
+test('daily puzzle: valid every day for a year and identical for the same date', () => {
+  for (let i = 0; i < 366; i++) {
+    const k = todayKey(new Date(2026, 9, 24 + i));
+    const lvl = dailyLevel(k);
+    assert.ok(lvl, k);
+    assert.deepEqual(validateLevel(lvl), [], k);
+  }
+  assert.deepEqual(dailyLevel('2026-11-03'), dailyLevel('2026-11-03'));
+  assert.notDeepEqual(dailyLevel('2026-11-03'), dailyLevel('2026-11-04'));
+  assert.equal(puzzleNumber('2026-10-24'), 1);
+});
+
+test('streak: consecutive days grow, replay is a no-op, a gap resets', () => {
+  let s = recordSolve({}, '2026-10-30', { score: 900 });
+  s = recordSolve(s, '2026-10-31', { score: 800 });
+  s = recordSolve(s, '2026-11-01', { score: 700 }); // month boundary
+  assert.equal(s.streak, 3);
+  assert.equal(recordSolve(s, '2026-11-01', { score: 1 }).streak, 3);
+  assert.equal(currentStreak(s, '2026-11-02'), 3); // not played yet today: still alive
+  assert.equal(currentStreak(s, '2026-11-03'), 0); // missed a day
+  s = recordSolve(s, '2026-11-03', { score: 500 });
+  assert.deepEqual([s.streak, s.best], [1, 3]);
 });
 
 test('grover.json: one Grover iteration finds the marked start', { skip: !existsSync(new URL('../quantum/grover.json', import.meta.url)) }, () => {

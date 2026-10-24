@@ -29,10 +29,10 @@ h1 { margin: 0; font-size: 1.4rem; letter-spacing: .04em; color: var(--accent); 
 }
 main { display: grid; gap: 16px; }
 .controls { text-align: center; }
-.controls .slots, .controls .moves, .controls .actions, .seq-row { justify-content: center; }
+.controls .slots, .controls .moves, .controls .actions { justify-content: center; }
 .help { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 4px 16px 8px; }
 
-#board { width: 100%; max-width: min(520px, 50vh); margin: 0 auto; display: block; }
+#board { width: 100%; max-width: min(520px, 44vh); margin: 0 auto; display: block; }
 .disc { fill: #0e1430; stroke: var(--line); stroke-width: 1.5; }
 /* Registered so it animates; labels inherit it and counter-rotate in sync with the board. */
 @property --angle { syntax: '<angle>'; inherits: true; initial-value: 45deg; }
@@ -66,7 +66,7 @@ main { display: grid; gap: 16px; }
 @keyframes sweep { from { transform: rotate(0); } to { transform: rotate(360deg); } }
 
 .controls { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
-.hint, .muted { color: var(--muted); font-size: .9rem; }
+.muted { color: var(--muted); font-size: .9rem; }
 .small { font-size: .8rem; }
 .slots, .moves, .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
 button { font: inherit; color: var(--text); background: #1d2545; border: 1px solid var(--line); border-radius: 8px; padding: 8px 14px; cursor: pointer; }
@@ -77,9 +77,11 @@ button.primary { background: var(--accent); color: #04121c; font-weight: 700; bo
 .moves button, .slot { width: 52px; height: 52px; font-size: 1.5rem; padding: 0; }
 .moves span, .slot span { display: inline-block; transition: transform .35s ease; }
 .slot { border-style: dashed; }
-.seq-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; }
-.match { color: var(--muted); font-size: .9rem; }
-.match b { color: var(--gold); font-size: 1.2rem; }
+.main-actions { display: grid; grid-template-columns: 1fr 1fr; max-width: 360px; margin-inline: auto; }
+.main-actions button { padding: 14px 10px; font-size: 1.15rem; font-weight: 700; border-radius: 12px; }
+.main-actions .primary { box-shadow: 0 0 18px rgba(79, 209, 255, .5); }
+.main-actions .scan { background: #3a2f8a; border-color: #b18cff; color: #fff; box-shadow: 0 0 18px rgba(177, 140, 255, .45); }
+.actions.secondary button { padding: 6px 12px; font-size: .85rem; background: transparent; color: var(--muted); }
 .slot.active { border: 2px solid var(--accent); }
 .message { color: var(--danger); margin: 0; }
 .message:empty { display: none; }
@@ -92,7 +94,6 @@ button.primary { background: var(--accent); color: #04121c; font-weight: 700; bo
   .layout { padding: 8px 12px; gap: 12px; }
   main { gap: 8px; }
   .controls { padding: 10px 12px; }
-  .hint { margin: 0; font-size: .82rem; }
   .slots, .moves, .actions { margin: 8px 0; gap: 6px; }
   .moves button, .slot { width: 46px; height: 46px; font-size: 1.3rem; }
   .actions { display: grid; grid-template-columns: repeat(4, 1fr); }
@@ -108,13 +109,20 @@ dialog { background: var(--panel); color: var(--text); border: 1px solid var(--l
 dialog::backdrop { background: rgba(5, 8, 20, .75); }
 dialog h2 { margin: 0 0 4px; color: var(--gold); }
 .score b { font-size: 1.6rem; color: var(--gold); }
+.modes { display: flex; gap: 6px; }
+.modes button { padding: 6px 12px; font-size: .9rem; }
+.modes button.active { border-color: var(--accent); color: var(--accent); }
+.streak b { color: var(--gold); }
+.daily-box { background: #2a2410; border: 1px solid var(--gold); border-radius: 10px; padding: 10px 14px; margin: 12px 0; }
+.daily-box p { margin: 0 0 8px; }
+.daily-box b { color: var(--gold); font-size: 1.3rem; }
 .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0; }
 .tile { background: #0e1430; border: 1px solid var(--line); border-radius: 10px; padding: 10px; text-align: center; }
 .tile b { display: block; font-size: 1.8rem; color: var(--accent); line-height: 1.1; }
 .tile span { font-size: .85rem; color: var(--muted); }
 
 .grover { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 8px; }
-.grover h3 { margin: 8px 0; }
+.grover h3 { margin: 8px 0; display: inline; font-size: 1.1rem; }
 .grover h4 { margin: 8px 0 4px; }
 .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 640px) { .cols { grid-template-columns: 1fr; } }

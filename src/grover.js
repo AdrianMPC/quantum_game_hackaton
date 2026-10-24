@@ -39,8 +39,7 @@ export function renderGrover(root, data, marked) {
   const m = data.marked[marked];
   let step = 1;
 
-  root.innerHTML = `
-    <h3>¿Y si fuera cuántico?</h3>
+  root.innerHTML = `<details><summary><h3>¿Y si fuera cuántico?</h3></summary>
     <p>El inicio correcto era <b>${LABELS[marked]}</b>. Imagina que solo puedes preguntar «¿es este?» a una caja negra.</p>
     <div class="cols">
       <div>
@@ -61,7 +60,7 @@ export function renderGrover(root, data, marked) {
     <details><summary>Ver circuito Qiskit (1 iteración)</summary><pre>${m.circuit}</pre></details>
     <p class="muted small">Probabilidad de medición — simulación ideal sin ruido con Qiskit ${data.qiskit}
       (Statevector; conteos con StatevectorSampler, ${data.shots} disparos, semilla ${data.seed}).
-      Con 4 candidatos no hay ventaja práctica: el objetivo es ver cómo un algoritmo cuántico reforma una distribución.</p>`;
+      Con 4 candidatos no hay ventaja práctica: el objetivo es ver cómo un algoritmo cuántico reforma una distribución.</p></details>`;
 
   const showQuantum = () => {
     const it = m.iterations[step];
