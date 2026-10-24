@@ -145,7 +145,15 @@ dialog h2 { margin: 0 0 4px; color: var(--gold); }
 .tile span { font-size: .85rem; color: var(--muted); }
 
 .quantum-panel { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 8px; }
-.quantum-panel h3 { margin: 8px 0; display: inline; font-size: 1.1rem; }
+.quantum-panel > details > summary { list-style: none; cursor: pointer; text-align: center; padding: 12px; border-radius: 12px;
+  border: 1px solid #b05cff; background: linear-gradient(90deg, rgba(62, 240, 255, .12), rgba(176, 92, 255, .18), rgba(255, 79, 216, .12));
+  box-shadow: 0 0 18px rgba(176, 92, 255, .45), inset 0 0 12px rgba(62, 240, 255, .15); animation: q-glow 2.2s ease-in-out infinite alternate; }
+.quantum-panel > details > summary::-webkit-details-marker { display: none; }
+.quantum-panel > details[open] > summary { animation: none; margin-bottom: 8px; }
+.quantum-panel h3 { margin: 0; display: inline; font-size: 1.35rem; font-weight: 800; letter-spacing: .02em;
+  background: linear-gradient(90deg, #3ef0ff, #b05cff, #ff4fd8); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 6px rgba(176, 92, 255, .7)); }
+@keyframes q-glow { to { box-shadow: 0 0 30px rgba(62, 240, 255, .55), inset 0 0 16px rgba(255, 79, 216, .2); } }
 .quantum-panel h4 { margin: 8px 0 4px; }
 .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 640px) { .cols { grid-template-columns: 1fr; } }

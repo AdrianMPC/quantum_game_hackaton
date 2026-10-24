@@ -6,10 +6,12 @@ A deduction puzzle on a circular board with a hidden maze. Players work out whic
 sequence of moves, reaches the goal. After each level, a separate panel compares **classical random sampling**
 (statistics/Monte Carlo) with **amplitude amplification** over the same four candidates, simulated with Qiskit.
 
-Concept mapping: a probability distribution over candidates. Blind classical search samples uniformly, so the
-number of tries is uniform on 1–4 with mean (N+1)/2 = 2.5. In the quantum version, the four starts are the basis
-states of 2 qubits. The measurement distribution follows the Born rule, and one amplification iteration (oracle + diffuser)
-reshapes it from 25% each to 100% on the marked start. A second iteration overshoots back to 25%.
+Concept mapping: a probability distribution over candidates. Blind classical search over N gates samples uniformly,
+so the number of tries is uniform on 1–N with mean (N+1)/2. In the quantum version the N gates are basis states of
+ceil(log2 N) qubits, prepared in a uniform superposition over exactly those N states. The measurement distribution
+follows the Born rule, and each amplification iteration (oracle + diffuser) rotates it: P(k) = sin²((2k+1)·asin(1/√N)).
+With 4 gates one iteration gives 100%; with 3 gates 92.6%; with 6 gates 90.7% (and 74.3% after overshooting to 2);
+with 2 gates it stays at 50%, so amplification does not help there. The tests check the Qiskit output against this formula.
 
 ## Run
 

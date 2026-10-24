@@ -139,8 +139,8 @@ function showWin() {
   $('win-stats').innerHTML = [['⏱ Tiempo', `${r.seconds}s`], ['▶ Play', r.plays], ['◎ Scanner', r.scans]]
     .map(([k, v]) => `<div class="tile"><b>${v}</b><span>${k}</span></div>`).join('');
   $('win-daily').hidden = mode !== 'daily';
-  // The quantum data models exactly the 4 corner gates (2 qubits).
-  $('quantum').hidden = levelStarts(g.level).length !== 4 || !!g.level.entries;
+  // One gate (tutorial): nothing to search, so no quantum comparison.
+  $('quantum').hidden = levelStarts(g.level).length < 2;
   $('share-msg').textContent = '';
   if (mode === 'daily') {
     streakState = daily.recordSolve(streakState, today, r);
@@ -150,7 +150,7 @@ function showWin() {
   } else {
     $('win-next').textContent = mode === 'tutorial' ? 'Empezar nivel 1' : index + 1 < levels.length ? 'Siguiente nivel' : 'Volver al nivel 1';
   }
-  if (!$('quantum').hidden) renderQuantum($('quantum'), quantumData, g.level.correctStart, r);
+  if (!$('quantum').hidden) renderQuantum($('quantum'), quantumData, levelStarts(g.level), g.level.correctStart, r);
   render();
   $('win').showModal();
 }

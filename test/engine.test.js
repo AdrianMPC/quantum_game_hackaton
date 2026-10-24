@@ -130,7 +130,17 @@ test('streak: consecutive days grow, replay is a no-op, a gap resets', () => {
   assert.deepEqual([s.streak, s.best], [1, 3]);
 });
 
-test('amplify.json: one amplification iteration finds the marked start', { skip: !existsSync(new URL('../quantum/amplify.json', import.meta.url)) }, () => {
-  const g = JSON.parse(readFileSync(new URL('../quantum/amplify.json', import.meta.url)));
-  for (const s of STARTS) assert.ok(g.marked[s].iterations[1].probabilities[s] > 0.99, s);
+test('amplify.json matches theory: P(k) = sin²((2k+1)·asin(1/√N)) for every N and marked gate', () => {
+  const q = JSON.parse(readFileSync(new URL('../quantum/amplify.json', import.meta.url)));
+  for (const N of [2, 3, 4, 6]) {
+    const th = Math.asin(1 / Math.sqrt(N));
+    for (let m = 0; m < N; m++) {
+      q.sizes[N].marked[m].iterations.forEach((it, k) => {
+        assert.ok(Math.abs(it.probabilities[m] - Math.sin((2 * k + 1) * th) ** 2) < 1e-5, `N=${N} m=${m} k=${k}`);
+        assert.equal(it.counts.reduce((a, b) => a + b, 0), q.shots); // no shot lands outside the N gates
+      });
+    }
+  }
+  // Every level (and the daily puzzle) has data for its gate count.
+  for (const lvl of data.levels) assert.ok(q.sizes[levelStarts(lvl).length], lvl.id);
 });

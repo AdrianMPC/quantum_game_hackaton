@@ -2,80 +2,93 @@
 # requires-python = ">=3.10,<3.14"
 # dependencies = ["qiskit==2.6.1"]
 # ///
-"""Amplitude amplification over the 4 maze starts (2 qubits), simulated with Qiskit.
+"""Amplitude amplification over the gates of a level, simulated with Qiskit.
 
-Each start is a basis state; the level's correct start is the marked state.
-Writes quantum/amplify.json with exact measurement probabilities after 0, 1 and 2
-amplification iterations, seeded sampled counts, and the circuit drawing.
+A level with N gates uses n = ceil(log2 N) qubits. State preparation A builds the
+uniform superposition over exactly the N gates (|0>..|N-1>), so no measurement can
+land on a non-existent gate. One iteration = oracle (phase -1 on the marked gate)
+followed by the diffuser A (2|0><0| - I) A^dagger.
+
+Writes quantum/amplify.json: for N in {2, 3, 4, 6} and every marked gate, exact
+measurement probabilities after 0, 1 and 2 iterations, seeded sampled counts, and
+the circuit drawing for one iteration.
 
 Run: uv run quantum/amplify.py
 """
 
 import json
+import math
 from pathlib import Path
 
 import qiskit
 from qiskit import QuantumCircuit
+from qiskit.circuit.library import StatePreparation
 from qiskit.primitives import StatevectorSampler
 from qiskit.quantum_info import Statevector
 
 SEED = 42
 SHOTS = 1024
-# Bitstrings in Qiskit print order (qubit 1, qubit 0).
-STARTS = {"NORTH": "00", "EAST": "01", "SOUTH": "10", "WEST": "11"}
-BY_BITS = {b: s for s, b in STARTS.items()}
+SIZES = [2, 3, 4, 6]  # gate counts used by the levels
 
 
-def flip_zeros(qc: QuantumCircuit, bits: str) -> None:
-    # bits[-1] is qubit 0 (Qiskit little-endian).
-    for q, b in enumerate(reversed(bits)):
-        if b == "0":
-            qc.x(q)
+def phase_flip(qc: QuantumCircuit, index: int, n: int) -> None:
+    """Multiply the amplitude of basis state |index> by -1."""
+    zeros = [q for q in range(n) if not (index >> q) & 1]  # qubit q holds bit q (little-endian)
+    if zeros:
+        qc.x(zeros)
+    if n == 1:
+        qc.z(0)
+    else:
+        qc.mcp(math.pi, list(range(n - 1)), n - 1)
+    if zeros:
+        qc.x(zeros)
 
 
-def amplify(bits: str, iterations: int) -> QuantumCircuit:
-    qc = QuantumCircuit(2)
-    qc.h([0, 1])  # uniform superposition: 25% each start
+def amplify(N: int, marked: int, iterations: int) -> QuantumCircuit:
+    n = max(1, math.ceil(math.log2(N)))
+    amps = [1 / math.sqrt(N) if i < N else 0 for i in range(2**n)]
+    prep = StatePreparation(amps, label="A")
+    qc = QuantumCircuit(n)
+    qc.append(prep, range(n))  # uniform over the N gates
     for _ in range(iterations):
         qc.barrier()
-        flip_zeros(qc, bits)  # oracle: phase -1 on the marked start
-        qc.cz(0, 1)
-        flip_zeros(qc, bits)
+        phase_flip(qc, marked, n)  # oracle
         qc.barrier()
-        qc.h([0, 1])  # diffuser: reflection about the mean amplitude
-        qc.x([0, 1])
-        qc.cz(0, 1)
-        qc.x([0, 1])
-        qc.h([0, 1])
+        qc.append(prep.inverse(), range(n))  # diffuser: A (2|0><0| - I) A†
+        phase_flip(qc, 0, n)
+        qc.append(prep, range(n))
     return qc
-
-
-def by_start(d: dict) -> dict:
-    return {BY_BITS[b]: d.get(b, 0) for b in sorted(BY_BITS)}
 
 
 def main() -> None:
     sampler = StatevectorSampler(seed=SEED)
-    marked = {}
-    for start, bits in STARTS.items():
-        iters = []
-        for k in range(3):
-            qc = amplify(bits, k)
-            probs = Statevector.from_instruction(qc).probabilities_dict()
-            measured = qc.measure_all(inplace=False)
-            counts = sampler.run([measured], shots=SHOTS).result()[0].data.meas.get_counts()
-            iters.append({
-                "probabilities": {s: round(p, 6) for s, p in by_start(probs).items()},
-                "counts": by_start(counts),
-            })
-        marked[start] = {"bits": bits, "circuit": str(amplify(bits, 1).draw(output="text")), "iterations": iters}
+    sizes = {}
+    for N in SIZES:
+        n = max(1, math.ceil(math.log2(N)))
+        marked = {}
+        for m in range(N):
+            iters = []
+            for k in range(3):
+                qc = amplify(N, m, k)
+                probs = Statevector.from_instruction(qc).probabilities()
+                counts = sampler.run([qc.measure_all(inplace=False)], shots=SHOTS).result()[0].data.meas.get_counts()
+                iters.append({
+                    "probabilities": [round(float(probs[i]), 6) for i in range(N)],
+                    "counts": [counts.get(format(i, f"0{n}b"), 0) for i in range(N)],
+                })
+            marked[str(m)] = {
+                "bits": format(m, f"0{n}b"),
+                "circuit": str(amplify(N, m, 1).draw(output="text", fold=-1)),
+                "iterations": iters,
+            }
+        sizes[str(N)] = {"qubits": n, "marked": marked}
 
     out = {
         "qiskit": qiskit.__version__,
         "seed": SEED,
         "shots": SHOTS,
         "note": "Ideal (noiseless) simulation: Statevector for exact probabilities, StatevectorSampler for counts.",
-        "marked": marked,
+        "sizes": sizes,
     }
     path = Path(__file__).with_name("amplify.json")
     path.write_text(json.dumps(out, indent=2, ensure_ascii=False) + "\n")
