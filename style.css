@@ -117,6 +117,18 @@ dialog h2 { margin: 0 0 4px; color: var(--gold); }
 .daily-box { background: #2a2410; border: 1px solid var(--gold); border-radius: 10px; padding: 10px 14px; margin: 12px 0; }
 .daily-box p { margin: 0 0 8px; }
 .daily-box b { color: var(--gold); font-size: 1.3rem; }
+.tour { position: fixed; inset: 0; z-index: 100; }
+.tour-spot { position: fixed; border-radius: 14px; box-shadow: 0 0 0 9999px rgba(3, 6, 18, .78); outline: 2px solid var(--accent); transition: all .25s ease; pointer-events: none; }
+.tour-card { position: fixed; left: 50%; transform: translateX(-50%); width: min(440px, calc(100vw - 32px)); background: var(--panel); border: 1px solid var(--accent); border-radius: 14px; padding: 14px 16px; box-shadow: 0 10px 40px rgba(0, 0, 0, .5); }
+.tour-card[data-pos="top"] { top: 16px; }
+.tour-card[data-pos="bottom"] { bottom: 16px; }
+.tour-card[data-pos="center"] { top: 50%; transform: translate(-50%, -50%); }
+.tour-card h2 { margin: 2px 0 8px; font-size: 1.2rem; color: var(--accent); }
+.tour-text { margin: 0 0 12px; line-height: 1.45; }
+.tour-step { margin: 0; font-size: .8rem; color: var(--muted); }
+.tour-nav { display: flex; gap: 8px; align-items: center; }
+.tour-nav span { flex: 1; }
+.tour-nav [data-tour="skip"] { background: transparent; color: var(--muted); }
 .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0; }
 .tile { background: #0e1430; border: 1px solid var(--line); border-radius: 10px; padding: 10px; text-align: center; }
 .tile b { display: block; font-size: 1.8rem; color: var(--accent); line-height: 1.1; }

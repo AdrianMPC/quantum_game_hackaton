@@ -4,6 +4,7 @@ import * as game from './game.js';
 import { renderBoard, renderMoves } from './render.js';
 import { renderGrover } from './grover.js';
 import * as daily from './daily.js';
+import { startTutorial, tutorialSeen } from './tutorial.js';
 
 const PLAY_ANIMATION_MS = 900;
 const $ = (id) => document.getElementById(id);
@@ -145,5 +146,8 @@ $('share').onclick = async () => {
   }
 };
 
+$('tutorial').onclick = startTutorial;
+
 if (levels.length) load(0);
 else $('message').textContent = 'No hay niveles válidos para jugar.';
+if (!tutorialSeen()) startTutorial();
