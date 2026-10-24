@@ -39,9 +39,17 @@ export function renderBoard(svg, g, { onStart }) {
   svg.querySelector('.sweep')?.remove();
   board.style.setProperty('--angle', `${angle}deg`);
 
+  // Roads along every grid connection. Walls stay hidden, so this never reveals the maze.
+  const roads = el('g', { class: 'roads' }, board);
   for (let x = 0; x < size; x++) for (let y = 0; y < size; y++) {
-    const [cx, cy] = toXY(size, [x, y]);
-    el('circle', { cx, cy, r: 1.6, class: 'dot' }, board);
+    const [x1, y1] = toXY(size, [x, y]);
+    for (const [nx, ny] of [[x + 1, y], [x, y + 1]]) {
+      if (nx >= size || ny >= size) continue;
+      const [x2, y2] = toXY(size, [nx, ny]);
+      el('line', { x1, y1, x2, y2, class: 'road' }, roads);
+      el('line', { x1, y1, x2, y2, class: 'lane' }, roads);
+    }
+    el('circle', { cx: x1, cy: y1, r: 4, class: 'dot' }, roads);
   }
 
   const paths = g.idealPaths ?? {};
@@ -51,12 +59,14 @@ export function renderBoard(svg, g, { onStart }) {
     const won = g.status === 'LEVEL_COMPLETED';
     const cls = won ? 'ray win' : g.status === 'PLAYING' ? 'ray drawing' : 'ray';
     if (hit && hit.blockedAt !== null) {
-      // Reachable part solid, the rest of the ideal route faded, wall marked between the cells.
-      el('polyline', { points: pts(size, ideal.slice(0, hit.blockedAt + 1)), class: cls, stroke: COLORS[s] }, board);
-      el('polyline', { points: pts(size, ideal.slice(hit.blockedAt)), class: 'ray ghost', stroke: COLORS[s] }, board);
+      // The ray runs into a wall halfway between two cells; the rest of the ideal route is faded.
       const [ax, ay] = toXY(size, ideal[hit.blockedAt]);
       const [bx, by] = toXY(size, ideal[hit.blockedAt + 1]);
-      el('circle', { cx: (ax + bx) / 2, cy: (ay + by) / 2, r: 5, class: 'hit' }, board);
+      const [mx, my] = [(ax + bx) / 2, (ay + by) / 2];
+      const solid = ideal.slice(0, hit.blockedAt + 1).map((p) => toXY(size, p).join(','));
+      el('polyline', { points: [...solid, `${mx},${my}`].join(' '), class: cls, stroke: COLORS[s] }, board);
+      el('polyline', { points: [`${mx},${my}`, ...pts(size, ideal.slice(hit.blockedAt + 1)).split(' ')].join(' '), class: 'ray ghost', stroke: COLORS[s] }, board);
+      crash(board, mx, my, bx - ax, by - ay);
     } else {
       el('polyline', { points: pts(size, ideal), class: cls, stroke: won ? '#ffd76a' : COLORS[s], pathLength: 1 }, board);
     }
@@ -82,6 +92,15 @@ export function renderBoard(svg, g, { onStart }) {
     sweep.style.animationDuration = `${g.scannerDurationMs}ms`;
     el('path', { d: 'M0 0 L0 -120 A120 120 0 0 1 60 -104 Z' }, sweep);
   }
+}
+
+// Wall segment across the road (perpendicular to travel), plus an impact flash.
+function crash(parent, x, y, dx, dy) {
+  const len = Math.hypot(dx, dy);
+  const [px, py] = [(-dy / len) * 10, (dx / len) * 10];
+  const g = el('g', { class: 'crash' }, parent);
+  el('circle', { cx: x, cy: y, r: 6, class: 'impact' }, g);
+  el('line', { x1: x - px, y1: y - py, x2: x + px, y2: y + py, class: 'wall' }, g);
 }
 
 // Text stays upright: .label counter-rotates by the board's --angle (style.css).
