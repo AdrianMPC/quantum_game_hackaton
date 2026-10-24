@@ -28,8 +28,8 @@ export function reset(g) {
   });
 }
 
-// The selected start is whichever one the rotation puts at the top of the circle.
-export const selectedStart = (g) => STARTS[(4 - g.rotation) % 4];
+// The selected start is whichever one the rotation puts at the bottom of the circle.
+export const selectedStart = (g) => STARTS[(6 - g.rotation) % 4];
 
 export function rotate(g) {
   if (g.status !== 'READY') return;
@@ -38,7 +38,7 @@ export function rotate(g) {
 
 export function selectStart(g, start) {
   if (g.status !== 'READY') return;
-  g.rotation = (4 - STARTS.indexOf(start)) % 4;
+  g.rotation = (6 - STARTS.indexOf(start)) % 4;
 }
 
 export function setMove(g, slot, move) {

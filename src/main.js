@@ -82,7 +82,8 @@ $('reset').onclick = () => { game.reset(g); activeSlot = 0; render(); };
 function showWin() {
   const r = g.result;
   $('win-score').textContent = r.score;
-  $('win-stats').textContent = `Tiempo ${r.seconds}s · Play ${r.plays} · Scanner ${r.scans}`;
+  $('win-stats').innerHTML = [['⏱ Tiempo', `${r.seconds}s`], ['▶ Play', r.plays], ['◎ Scanner', r.scans]]
+    .map(([k, v]) => `<div class="tile"><b>${v}</b><span>${k}</span></div>`).join('');
   $('win-next').textContent = index + 1 < levels.length ? 'Siguiente nivel' : 'Volver al nivel 1';
   renderGrover($('grover'), groverData, g.level.correctStart);
   $('win').showModal();

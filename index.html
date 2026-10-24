@@ -16,18 +16,21 @@
       <span>⏱ <b id="time">0</b>s</span>
       <span>Play <b id="plays">0</b></span>
       <span>Scanner <b id="scans">0</b></span>
-      <span title="Comparación clásica posición por posición con la solución. No es una probabilidad cuántica.">Coincidencia de secuencia <b id="match">–</b></span>
     </div>
   </header>
 
   <p id="config-error" class="error" hidden></p>
 
+  <div class="layout">
   <main>
     <svg id="board" viewBox="-125 -125 250 250" role="img" aria-label="Tablero circular con laberinto oculto"></svg>
 
     <section class="controls">
-      <p class="hint">Inicio seleccionado: <b id="selected">–</b> (el que está arriba). Gira el tablero o toca un inicio.</p>
-      <div id="slots" class="slots" aria-label="Secuencia de movimientos"></div>
+      <p class="hint">Inicio seleccionado: <b id="selected">–</b> (el que está abajo). Gira el tablero o toca un inicio.</p>
+      <div class="seq-row">
+        <div id="slots" class="slots" aria-label="Secuencia de movimientos"></div>
+        <span class="match" title="Comparación clásica posición por posición con la solución. No es una probabilidad cuántica.">Coincidencia de secuencia <b id="match">–</b></span>
+      </div>
       <div class="moves" aria-label="Movimientos">
         <button data-move="UP_LEFT" aria-label="Arriba-izquierda"><span>↖</span></button>
         <button data-move="UP_RIGHT" aria-label="Arriba-derecha"><span>↗</span></button>
@@ -41,7 +44,11 @@
         <button id="reset">Reiniciar</button>
       </div>
       <p id="message" class="message" role="status"></p>
-      <details>
+    </section>
+  </main>
+
+  <aside class="help">
+      <details open>
         <summary>¿Qué estoy viendo?</summary>
         <p>Hay un laberinto oculto. Solo un inicio, con la secuencia correcta, llega al destino ★.</p>
         <p><b>Play</b> dibuja el recorrido ideal de tu secuencia desde los cuatro inicios, ignorando muros.
@@ -50,13 +57,13 @@
           No es superposición ni ventaja cuántica. El porcentaje es una <b>coincidencia de secuencia</b>, no una probabilidad.
           Al ganar, compara cómo encontraría el inicio correcto el azar clásico y el algoritmo de Grover simulado con Qiskit.</p>
       </details>
-    </section>
-  </main>
+  </aside>
+  </div>
 
   <dialog id="win">
     <h2>¡Nivel completado!</h2>
     <p class="score">Puntuación <b id="win-score"></b></p>
-    <p id="win-stats"></p>
+    <div id="win-stats" class="tiles"></div>
     <section id="grover" class="grover"></section>
     <div class="actions">
       <button id="win-retry">Reiniciar nivel</button>
