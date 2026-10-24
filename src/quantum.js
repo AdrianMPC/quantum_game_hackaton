@@ -1,5 +1,5 @@
 // «¿Y si fuera cuántico?» panel. Separate from the puzzle score (spec §3):
-// classical random guessing vs Grover measurement probabilities precomputed with Qiskit.
+// classical random guessing vs amplitude-amplification measurement probabilities precomputed with Qiskit.
 import { STARTS } from './engine.js';
 import { COLORS, LABELS } from './render.js';
 
@@ -8,7 +8,7 @@ const TRIALS = 1000;
 const STEP_TEXT = [
   'Superposición uniforme (H en ambos qubits): 25 % por inicio. Medir ahora es igual que adivinar al azar.',
   'Una iteración: el oráculo invierte el signo del inicio correcto y el difusor refleja las amplitudes sobre su media. Con 4 candidatos, la probabilidad llega a 100 %.',
-  'Dos iteraciones: te pasaste. Grover es una rotación del vector de estado; girar de más baja la probabilidad a 25 %. No es "probar todo a la vez".',
+  'Dos iteraciones: te pasaste. La amplificación es una rotación del vector de estado; girar de más baja la probabilidad a 25 %. No es "probar todo a la vez".',
 ];
 
 // Blind classical search: open starts in a random order (Fisher–Yates) until hitting the marked one.
@@ -31,9 +31,25 @@ const bars = (rows) =>
     .map(({ name, value, text, color }) => `<div class="bar"><span>${name}</span><i style="width:${(value * 100).toFixed(1)}%;background:${color}"></i><b>${text}</b></div>`)
     .join('')}</div>`;
 
-export function renderGrover(root, data, marked) {
+// The player's own run vs the classical average vs one amplification iteration.
+function versus(result) {
+  const rows = [
+    { name: 'Tú (clásico)', n: result.plays, note: `${result.plays} Play · ${result.startsTried} de 4 inicios probados` },
+    { name: 'Azar clásico', n: 2.5, note: '2,5 consultas en promedio' },
+    { name: 'Cuántico', n: 1, note: '1 iteración · 100 % de acierto' },
+  ];
+  const max = Math.max(...rows.map((r) => r.n));
+  return `<div class="versus">
+    <h4>Tu partida vs cuántico</h4>
+    ${bars(rows.map((r, i) => ({ name: r.name, value: r.n / max, text: r.note, color: ['#3ef0ff', '#8a80a8', '#ffd76a'][i] })))}
+    <p class="muted small">Cada Play es una consulta «¿es este inicio y esta secuencia?». La parte cuántica solo busca el inicio entre 4;
+      tú además tenías que descubrir la secuencia.</p>
+  </div>`;
+}
+
+export function renderQuantum(root, data, marked, result) {
   if (!data) {
-    root.innerHTML = '<p class="muted">Datos cuánticos no disponibles (falta quantum/grover.json).</p>';
+    root.innerHTML = '<p class="muted">Datos cuánticos no disponibles (falta quantum/amplify.json).</p>';
     return;
   }
   const m = data.marked[marked];
@@ -41,6 +57,7 @@ export function renderGrover(root, data, marked) {
 
   root.innerHTML = `<details><summary><h3>¿Y si fuera cuántico?</h3></summary>
     <p>El inicio correcto era <b>${LABELS[marked]}</b>. Imagina que solo puedes preguntar «¿es este?» a una caja negra.</p>
+    ${result ? versus(result) : ''}
     <div class="cols">
       <div>
         <h4>Clásico: muestreo al azar</h4>
@@ -49,9 +66,9 @@ export function renderGrover(root, data, marked) {
         <div data-out="classical"></div>
       </div>
       <div>
-        <h4>Cuántico: Grover con 2 qubits</h4>
+        <h4>Cuántico: amplificación de amplitud con 2 qubits</h4>
         <p class="muted">4 inicios = 4 estados |00⟩ |01⟩ |10⟩ |11⟩. La medición sigue la regla de Born: probabilidad = |amplitud|².</p>
-        <div class="stepper" role="group" aria-label="Iteraciones de Grover">
+        <div class="stepper" role="group" aria-label="Iteraciones de amplificación">
           ${[0, 1, 2].map((k) => `<button data-step="${k}">${k} iter.</button>`).join('')}
         </div>
         <div data-out="quantum"></div>
@@ -78,8 +95,8 @@ export function renderGrover(root, data, marked) {
   root.querySelector('[data-act="sample"]').onclick = () => {
     const { hist, mean } = sampleClassical(marked);
     root.querySelector('[data-out="classical"]').innerHTML =
-      bars(hist.map((n, i) => ({ name: `${i + 1} intento${i ? 's' : ''}`, value: n / TRIALS, text: `${n}`, color: '#8aa0c8' }))) +
-      `<p>Media observada: <b>${mean.toFixed(2)}</b> intentos (teórica 2,5). Grover: 1 consulta al oráculo y luego medir.</p>`;
+      bars(hist.map((n, i) => ({ name: `${i + 1} intento${i ? 's' : ''}`, value: n / TRIALS, text: `${n}`, color: '#8a80a8' }))) +
+      `<p>Media observada: <b>${mean.toFixed(2)}</b> intentos (teórica 2,5). Cuántico: 1 consulta al oráculo y luego medir.</p>`;
   };
   showQuantum();
 }

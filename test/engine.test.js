@@ -1,21 +1,43 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
-import { validateLevel, match, score, STARTS } from '../src/engine.js';
+import { validateLevel, match, score, STARTS, levelStarts } from '../src/engine.js';
 import { dailyLevel, recordSolve, currentStreak, todayKey, puzzleNumber } from '../src/daily.js';
 import { createGame, setMove, play, scan, settle, rotate, selectStart, reset, selectedStart } from '../src/game.js';
 
 const data = JSON.parse(readFileSync(new URL('../levels.json', import.meta.url)));
 const lengths = data.levels.map((l) => l.targetSequence.length);
 
-test('three levels with 1, 2 and 3 moves, each valid with a unique solution', () => {
-  assert.deepEqual(lengths, [1, 2, 3]);
+test('four levels with 2, 3, 4 and 6 entries, each valid with a unique solution', () => {
+  assert.deepEqual(lengths, [1, 2, 3, 3]);
+  assert.deepEqual(data.levels.map((l) => (l.starts ?? STARTS).length), [2, 3, 4, 6]);
   for (const level of data.levels) assert.deepEqual(validateLevel(level), [], level.id);
+});
+
+test('tutorial: one entry, two routes; the scripted wrong route crashes, the right one wins', () => {
+  const t = data.tutorial;
+  assert.deepEqual(validateLevel(t), []);
+  assert.deepEqual(t.starts, ['SOUTH']);
+  const g = createGame(t, data.defaults);
+  rotate(g); // only one entry: rotating keeps it selected
+  assert.equal(selectedStart(g), 'SOUTH');
+  ['UP_RIGHT', 'UP_LEFT'].forEach((m, i) => setMove(g, i, m)); // tutorial's first try
+  play(g);
+  assert.equal(g.status, 'PLAYING');
+  assert.equal(Object.keys(g.idealPaths).length, 1);
+  settle(g);
+  scan(g);
+  assert.equal(g.collisions.SOUTH.blockedAt, 1); // crashes on the second move
+  settle(g);
+  ['UP_LEFT', 'UP_RIGHT'].forEach((m, i) => setMove(g, i, m));
+  play(g);
+  assert.equal(g.status, 'LEVEL_COMPLETED');
 });
 
 test('broken level reports errors without throwing', () => {
   const lvl1 = data.levels[0];
-  assert.ok(validateLevel({ ...lvl1, walls: [] }).some((e) => e.includes('solución alternativa')));
+  assert.ok(validateLevel({ ...data.levels[2], walls: [] }).some((e) => e.includes('solución alternativa')));
+  assert.ok(validateLevel({ ...lvl1, starts: ['NORTH', 'NOPE'] }).length > 0);
   assert.ok(validateLevel({ ...lvl1, goal: [9, 9] }).length > 0);
   assert.ok(validateLevel({ ...lvl1, targetSequence: ['UP_LEFT', 'UP_LEFT', 'UP_LEFT', 'UP_LEFT'] }).length > 0);
   assert.ok(validateLevel(null).length > 0);
@@ -41,14 +63,14 @@ function solve(level, now) {
 
 test('only correct sequence + start wins, regardless of rotation history', () => {
   for (const level of data.levels) {
-    for (const s of STARTS) {
+    for (const s of levelStarts(level)) {
       const g = solve(level);
       selectStart(g, s);
       play(g);
       assert.equal(g.status === 'LEVEL_COMPLETED', s === level.correctStart, `${level.id} ${s}`);
     }
     const g = solve(level);
-    for (let i = 0; i < 4; i++) rotate(g); // full turn: same selection, same outcome
+    levelStarts(level).forEach(() => rotate(g)); // full turn: same selection, same outcome
     assert.equal(selectedStart(g), level.correctStart);
     play(g);
     assert.equal(g.status, 'LEVEL_COMPLETED');
@@ -78,9 +100,10 @@ test('counters increment once per action; incomplete sequence is rejected; reset
   selectStart(g, level.correctStart);
   play(g);
   assert.equal(g.status, 'LEVEL_COMPLETED');
-  assert.deepEqual(g.result, { seconds: 30, plays: 2, scans: 1, score: 1000 - 60 - 50 - 10 });
+  // First Play used the default start (SOUTH, which is also correct here), so one distinct start.
+  assert.deepEqual(g.result, { seconds: 30, plays: 2, scans: 1, startsTried: 1, score: 1000 - 60 - 50 - 10 });
   reset(g);
-  assert.deepEqual([g.plays, g.scans, g.rotation, g.status, g.seq], [0, 0, 0, 'READY', [null, null, null]]);
+  assert.deepEqual([g.plays, g.scans, g.selected, g.status, g.seq], [0, 0, 'SOUTH', 'READY', [null, null, null]]);
 });
 
 test('daily puzzle: valid every day for a year and identical for the same date', () => {
@@ -107,7 +130,7 @@ test('streak: consecutive days grow, replay is a no-op, a gap resets', () => {
   assert.deepEqual([s.streak, s.best], [1, 3]);
 });
 
-test('grover.json: one Grover iteration finds the marked start', { skip: !existsSync(new URL('../quantum/grover.json', import.meta.url)) }, () => {
-  const g = JSON.parse(readFileSync(new URL('../quantum/grover.json', import.meta.url)));
+test('amplify.json: one amplification iteration finds the marked start', { skip: !existsSync(new URL('../quantum/amplify.json', import.meta.url)) }, () => {
+  const g = JSON.parse(readFileSync(new URL('../quantum/amplify.json', import.meta.url)));
   for (const s of STARTS) assert.ok(g.marked[s].iterations[1].probabilities[s] > 0.99, s);
 });

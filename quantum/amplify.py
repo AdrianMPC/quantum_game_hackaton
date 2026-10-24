@@ -2,13 +2,13 @@
 # requires-python = ">=3.10,<3.14"
 # dependencies = ["qiskit==2.6.1"]
 # ///
-"""Grover search over the 4 maze starts (2 qubits), simulated with Qiskit.
+"""Amplitude amplification over the 4 maze starts (2 qubits), simulated with Qiskit.
 
 Each start is a basis state; the level's correct start is the marked state.
-Writes quantum/grover.json with exact measurement probabilities after 0, 1 and 2
-Grover iterations, seeded sampled counts, and the circuit drawing.
+Writes quantum/amplify.json with exact measurement probabilities after 0, 1 and 2
+amplification iterations, seeded sampled counts, and the circuit drawing.
 
-Run: uv run quantum/grover.py
+Run: uv run quantum/amplify.py
 """
 
 import json
@@ -33,7 +33,7 @@ def flip_zeros(qc: QuantumCircuit, bits: str) -> None:
             qc.x(q)
 
 
-def grover(bits: str, iterations: int) -> QuantumCircuit:
+def amplify(bits: str, iterations: int) -> QuantumCircuit:
     qc = QuantumCircuit(2)
     qc.h([0, 1])  # uniform superposition: 25% each start
     for _ in range(iterations):
@@ -60,7 +60,7 @@ def main() -> None:
     for start, bits in STARTS.items():
         iters = []
         for k in range(3):
-            qc = grover(bits, k)
+            qc = amplify(bits, k)
             probs = Statevector.from_instruction(qc).probabilities_dict()
             measured = qc.measure_all(inplace=False)
             counts = sampler.run([measured], shots=SHOTS).result()[0].data.meas.get_counts()
@@ -68,7 +68,7 @@ def main() -> None:
                 "probabilities": {s: round(p, 6) for s, p in by_start(probs).items()},
                 "counts": by_start(counts),
             })
-        marked[start] = {"bits": bits, "circuit": str(grover(bits, 1).draw(output="text")), "iterations": iters}
+        marked[start] = {"bits": bits, "circuit": str(amplify(bits, 1).draw(output="text")), "iterations": iters}
 
     out = {
         "qiskit": qiskit.__version__,
@@ -77,7 +77,7 @@ def main() -> None:
         "note": "Ideal (noiseless) simulation: Statevector for exact probabilities, StatevectorSampler for counts.",
         "marked": marked,
     }
-    path = Path(__file__).with_name("grover.json")
+    path = Path(__file__).with_name("amplify.json")
     path.write_text(json.dumps(out, indent=2, ensure_ascii=False) + "\n")
     print(f"wrote {path} (qiskit {qiskit.__version__})")
 

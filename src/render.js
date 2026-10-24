@@ -1,11 +1,11 @@
 // Drawing only: reads game state, never changes it.
-import { STARTS, startCell } from './engine.js';
+import { levelStarts, entryCell, entryAngle } from './engine.js';
 import { selectedStart } from './game.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const R = 95; // distance from center to the start nodes
-export const COLORS = { NORTH: '#4fd1ff', EAST: '#b18cff', SOUTH: '#ff7ab6', WEST: '#7dffb2' };
-export const LABELS = { NORTH: 'N', EAST: 'E', SOUTH: 'S', WEST: 'O' };
+export const COLORS = { NORTH: '#3ef0ff', EAST: '#b05cff', SOUTH: '#ff4fd8', WEST: '#5b8cff', NE: '#ff8a3d', SW: '#7dffb2' };
+export const LABELS = { NORTH: 'N', EAST: 'E', SOUTH: 'S', WEST: 'O', NE: 'NE', SW: 'SO' };
 export const GLYPHS = { UP_LEFT: '↖', UP_RIGHT: '↗', DOWN_LEFT: '↙', DOWN_RIGHT: '↘' };
 
 const el = (tag, attrs = {}, parent) => {
@@ -23,11 +23,15 @@ function toXY(size, [x, y]) {
 }
 const pts = (size, cells) => cells.map((p) => toXY(size, p).join(',')).join(' ');
 
-export const boardAngle = (g) => 45 + 90 * g.rotation;
+// Turn the board so the selected entry sits at the bottom (90° in SVG coordinates),
+// choosing the equivalent angle closest to the current one so the turn is short.
+function boardAngle(g, prev) {
+  const a = 90 - entryAngle(g.level, selectedStart(g));
+  return prev === undefined ? a : a + 360 * Math.round((prev - a) / 360);
+}
 
 export function renderBoard(svg, g, { onStart }) {
   const { size, goal } = g.level;
-  const angle = boardAngle(g);
   // The board group persists across renders so its CSS rotation transition can animate.
   let board = svg.querySelector('.board');
   if (!board) {
@@ -35,6 +39,9 @@ export function renderBoard(svg, g, { onStart }) {
     el('circle', { r: 120, class: 'disc' }, svg);
     board = el('g', { class: 'board', 'clip-path': 'url(#disc)' }, svg);
   }
+  const prev = board.dataset.angle === undefined ? undefined : +board.dataset.angle;
+  const angle = boardAngle(g, prev);
+  board.dataset.angle = angle;
   board.replaceChildren();
   svg.querySelector('.sweep')?.remove();
   board.style.setProperty('--angle', `${angle}deg`);
@@ -78,20 +85,23 @@ export function renderBoard(svg, g, { onStart }) {
   label(goalG, gx, gy, '★');
 
   const selected = selectedStart(g);
-  for (const s of STARTS) {
-    const [sx, sy] = toXY(size, startCell(size, s));
+  for (const s of levelStarts(g.level)) {
+    const [sx, sy] = toXY(size, entryCell(g.level, s));
     const node = el('g', { class: `start${s === selected ? ' selected' : ''}`, tabindex: 0, role: 'button', 'aria-label': `Inicio ${s}` }, board);
-    el('circle', { cx: sx, cy: sy, r: 11, stroke: COLORS[s] }, node);
+    if (s === selected) el('circle', { cx: sx, cy: sy, r: 15, class: 'halo', stroke: COLORS[s] }, node);
+    el('circle', { cx: sx, cy: sy, r: s === selected ? 13 : 11, stroke: COLORS[s], fill: s === selected ? COLORS[s] : '#050409' }, node);
     label(node, sx, sy, LABELS[s]);
     node.addEventListener('click', () => onStart(s));
     node.addEventListener('keydown', (e) => (e.key === 'Enter' || e.key === ' ') && onStart(s));
   }
 
-  if (g.status === 'SCANNING') {
-    const sweep = el('g', { class: 'sweep' }, svg);
-    sweep.style.animationDuration = `${g.scannerDurationMs}ms`;
+  const held = g.level.scannerHold && g.collisions;
+  if (g.status === 'SCANNING' || held) {
+    const sweep = el('g', { class: held ? 'sweep loop' : 'sweep' }, svg);
+    if (!held) sweep.style.animationDuration = `${g.scannerDurationMs}ms`;
     el('path', { d: 'M0 0 L0 -120 A120 120 0 0 1 60 -104 Z' }, sweep);
   }
+  return angle;
 }
 
 // Wall segment across the road (perpendicular to travel), plus an impact flash.
@@ -109,8 +119,8 @@ function label(parent, x, y, text) {
 }
 
 // Arrow glyphs turn with the board so a move always points the same way on the maze.
-export function renderMoves(root, g, activeSlot, { onSlot }) {
-  const turn = `rotate(${90 * g.rotation}deg)`;
+export function renderMoves(root, g, activeSlot, { onSlot }, boardTurn) {
+  const turn = `rotate(${boardTurn - 45}deg)`;
   root.querySelectorAll('.moves span').forEach((s) => (s.style.transform = turn));
   const slots = root.querySelector('#slots');
   slots.replaceChildren(...g.seq.map((m, i) => {

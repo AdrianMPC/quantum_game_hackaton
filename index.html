@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Quantum Maze</title>
-  <meta name="description" content="Puzzle de deducción que lleva de la probabilidad clásica a la amplificación de amplitud (Grover) con Qiskit.">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='6' fill='none' stroke='%234fd1ff' stroke-width='2'/></svg>">
+  <title>BlaQ</title>
+  <meta name="description" content="Puzzle de deducción que lleva de la probabilidad clásica a la amplificación de amplitud con Qiskit.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='5.5' fill='black' stroke='%23b05cff' stroke-width='2.5'/><path d='M10 10l4 4' stroke='%233ef0ff' stroke-width='2.5'/></svg>">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <h1>Quantum Maze</h1>
+    <h1><img src="assets/blaq.webp" alt="BlaQ" width="480" height="281"></h1>
     <nav class="modes" aria-label="Modo de juego">
       <button id="mode-levels">Niveles</button>
       <button id="mode-daily">Reto diario <span class="streak">🔥 <b id="streak">0</b></span></button>
@@ -56,11 +56,11 @@
   <aside class="help">
       <details open>
         <summary>¿Qué estoy viendo?</summary>
-        <p>Hay un laberinto oculto. Solo un inicio, con la secuencia correcta, llega al destino ★.</p>
-        <p><b>Play</b> dibuja el recorrido ideal de tu secuencia desde los cuatro inicios, ignorando muros.
+        <p>Hay un laberinto oculto. Solo una compuerta, con la secuencia correcta, llega al destino ★. Juegas desde la compuerta de abajo.</p>
+        <p><b>Play</b> dibuja el recorrido ideal de tu secuencia desde todas las compuertas, ignorando muros.
           <b>Scanner</b> revela por 2 s dónde choca cada recorrido.</p>
-        <p>Los cuatro rayos son una <b>analogía visual</b>: el juego los calcula de forma clásica, uno por uno.
-          No es superposición ni ventaja cuántica.          Al ganar, abre «¿Y si fuera cuántico?» para comparar cómo encontraría el inicio correcto el azar clásico y el algoritmo de Grover simulado con Qiskit.</p>
+        <p>Los rayos son una <b>analogía visual</b>: el juego los calcula de forma clásica, uno por uno.
+          No es superposición ni ventaja cuántica. En los niveles de 4 compuertas, al ganar, abre «¿Y si fuera cuántico?» para comparar cómo encontraría la compuerta correcta el azar clásico y un algoritmo cuántico simulado con Qiskit.</p>
       </details>
   </aside>
   </div>
@@ -73,7 +73,7 @@
       <p id="win-streak"></p>
       <button id="share">Compartir resultado</button> <span id="share-msg" class="muted"></span>
     </div>
-    <section id="grover" class="grover"></section>
+    <section id="quantum" class="quantum-panel"></section>
     <div class="actions">
       <button id="win-retry">Reiniciar nivel</button>
       <button id="win-next" class="primary">Continuar</button>

@@ -1,16 +1,16 @@
 // Wiring: load data, validate levels, connect DOM events to game.js, re-render.
-import { validateLevel } from './engine.js';
+import { validateLevel, levelStarts } from './engine.js';
 import * as game from './game.js';
 import { renderBoard, renderMoves } from './render.js';
-import { renderGrover } from './grover.js';
+import { renderQuantum } from './quantum.js';
 import * as daily from './daily.js';
-import { startTutorial, tutorialSeen } from './tutorial.js';
+import { startTutorial, TUTORIAL_STEPS, GATE_STEPS } from './tutorial.js';
 
 const PLAY_ANIMATION_MS = 900;
 const $ = (id) => document.getElementById(id);
 
 const levelData = await fetch('levels.json').then((r) => r.json());
-const groverData = await fetch('quantum/grover.json').then((r) => (r.ok ? r.json() : null)).catch(() => null);
+const quantumData = await fetch('quantum/amplify.json').then((r) => (r.ok ? r.json() : null)).catch(() => null);
 
 // Invalid levels are reported and skipped; the rest stay playable.
 const problems = [];
@@ -27,7 +27,10 @@ if (problems.length) {
   $('config-error').textContent = `Configuración de nivel inválida (omitido): ${problems.join(' | ')}`;
 }
 
-let mode = 'levels'; // 'levels' | 'daily'
+// Separate, very easy one-move level; falls back to level 1 if its data is invalid.
+const tutorialLevel = levelData.tutorial && !validateLevel(levelData.tutorial).length ? levelData.tutorial : levels[0];
+
+let mode = 'levels'; // 'tutorial' | 'levels' | 'daily'
 let index = 0;
 let today = daily.todayKey();
 let streakState = daily.loadStreak();
@@ -40,10 +43,16 @@ function start(level) {
   render();
 }
 
+let gateTourShown = false;
 function load(i) {
   mode = 'levels';
   index = i;
   start(levels[index]);
+  // First time level 1 opens in this visit: short tour on changing gates.
+  if (i === 0 && !gateTourShown) {
+    gateTourShown = true;
+    startTutorial(GATE_STEPS);
+  }
 }
 
 function loadDaily() {
@@ -61,10 +70,18 @@ function loadDaily() {
   }
 }
 
+// The tutorial's last step explains the win, so the win dialog waits for the tour to close.
+let winAfterTour = false;
+function loadTutorial() {
+  mode = 'tutorial';
+  start(tutorialLevel);
+  startTutorial(TUTORIAL_STEPS, () => { if (winAfterTour) { winAfterTour = false; showWin(); } });
+}
+
 function render() {
-  renderBoard($('board'), g, { onStart: (s) => { game.selectStart(g, s); render(); } });
-  renderMoves(document.body, g, activeSlot, { onSlot: (i) => { activeSlot = i; render(); } });
-  $('level-num').textContent = mode === 'daily' ? 'diario' : `${index + 1}/${levels.length}`;
+  const angle = renderBoard($('board'), g, { onStart: (s) => { game.selectStart(g, s); render(); } });
+  renderMoves(document.body, g, activeSlot, { onSlot: (i) => { activeSlot = i; render(); } }, angle);
+  $('level-num').textContent = { daily: 'diario', tutorial: '0' }[mode] ?? `${index + 1}/${levels.length}`;
   $('level-title').textContent = g.level.title;
   $('plays').textContent = g.plays;
   $('scans').textContent = g.scans;
@@ -101,7 +118,10 @@ $('play').onclick = () => {
   game.play(g);
   render();
   if (g.status === 'PLAYING') settleAfter(PLAY_ANIMATION_MS);
-  if (g.status === 'LEVEL_COMPLETED') setTimeout(showWin, PLAY_ANIMATION_MS);
+  if (g.status === 'LEVEL_COMPLETED') {
+    if (document.querySelector('.tour')) winAfterTour = true;
+    else setTimeout(showWin, PLAY_ANIMATION_MS);
+  }
 };
 $('scan').onclick = () => {
   game.scan(g);
@@ -119,6 +139,8 @@ function showWin() {
   $('win-stats').innerHTML = [['⏱ Tiempo', `${r.seconds}s`], ['▶ Play', r.plays], ['◎ Scanner', r.scans]]
     .map(([k, v]) => `<div class="tile"><b>${v}</b><span>${k}</span></div>`).join('');
   $('win-daily').hidden = mode !== 'daily';
+  // The quantum data models exactly the 4 corner gates (2 qubits).
+  $('quantum').hidden = levelStarts(g.level).length !== 4 || !!g.level.entries;
   $('share-msg').textContent = '';
   if (mode === 'daily') {
     streakState = daily.recordSolve(streakState, today, r);
@@ -126,18 +148,26 @@ function showWin() {
     $('win-streak').innerHTML = `🔥 Racha: <b>${streakState.streak}</b> día${streakState.streak === 1 ? '' : 's'} · Mejor: ${streakState.best} · Nuevo reto mañana`;
     $('win-next').textContent = 'Ir a los niveles';
   } else {
-    $('win-next').textContent = index + 1 < levels.length ? 'Siguiente nivel' : 'Volver al nivel 1';
+    $('win-next').textContent = mode === 'tutorial' ? 'Empezar nivel 1' : index + 1 < levels.length ? 'Siguiente nivel' : 'Volver al nivel 1';
   }
-  renderGrover($('grover'), groverData, g.level.correctStart);
+  if (!$('quantum').hidden) renderQuantum($('quantum'), quantumData, g.level.correctStart, r);
   render();
   $('win').showModal();
 }
-$('win-retry').onclick = () => { $('win').close(); mode === 'daily' ? loadDaily() : load(index); };
-$('win-next').onclick = () => { $('win').close(); load(mode === 'daily' ? index : (index + 1) % levels.length); };
+$('win-retry').onclick = () => {
+  $('win').close();
+  if (mode === 'daily') loadDaily();
+  else if (mode === 'tutorial') start(tutorialLevel);
+  else load(index);
+};
+$('win-next').onclick = () => {
+  $('win').close();
+  load({ daily: index, tutorial: 0 }[mode] ?? (index + 1) % levels.length);
+};
 
 $('share').onclick = async () => {
   const r = g.result;
-  const text = `Quantum Maze · ${g.level.title}\n🔥 Racha ${streakState.streak} · ⏱ ${r.seconds}s · ▶ ${r.plays} · ◎ ${r.scans}\nPuntuación ${r.score}\n${location.origin}`;
+  const text = `BlaQ · ${g.level.title}\n🔥 Racha ${streakState.streak} · ⏱ ${r.seconds}s · ▶ ${r.plays} · ◎ ${r.scans}\nPuntuación ${r.score}\n${location.origin}`;
   try {
     if (navigator.share) await navigator.share({ text });
     else { await navigator.clipboard.writeText(text); $('share-msg').textContent = '¡Copiado!'; }
@@ -146,8 +176,8 @@ $('share').onclick = async () => {
   }
 };
 
-$('tutorial').onclick = startTutorial;
+$('tutorial').onclick = loadTutorial;
 
-if (levels.length) load(0);
-else $('message').textContent = 'No hay niveles válidos para jugar.';
-if (!tutorialSeen()) startTutorial();
+// Every page load opens on the tutorial level.
+if (!levels.length) $('message').textContent = 'No hay niveles válidos para jugar.';
+else loadTutorial();

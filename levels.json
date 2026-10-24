@@ -8,33 +8,318 @@
       "scannerPenalty": 10
     }
   },
+  "tutorial": {
+    "id": "tutorial",
+    "title": "Tutorial",
+    "size": 3,
+    "starts": [
+      "SOUTH"
+    ],
+    "correctStart": "SOUTH",
+    "goal": [
+      1,
+      1
+    ],
+    "targetSequence": [
+      "UP_LEFT",
+      "UP_RIGHT"
+    ],
+    "walls": [
+      [
+        [
+          2,
+          1
+        ],
+        [
+          1,
+          1
+        ]
+      ]
+    ],
+    "scannerHold": true
+  },
   "levels": [
     {
       "id": "level_01",
-      "title": "Primer pulso",
+      "title": "Dos compuertas",
       "size": 3,
+      "starts": [
+        "NORTH",
+        "SOUTH"
+      ],
       "correctStart": "NORTH",
-      "goal": [1, 0],
-      "targetSequence": ["DOWN_RIGHT"],
-      "walls": [[[0, 2], [1, 2]], [[1, 0], [2, 0]]]
+      "goal": [
+        1,
+        0
+      ],
+      "targetSequence": [
+        "DOWN_RIGHT"
+      ],
+      "walls": [
+        [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        [
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      ]
     },
     {
       "id": "level_02",
-      "title": "Doble rebote",
+      "title": "Tres compuertas",
       "size": 4,
+      "starts": [
+        "WEST",
+        "SOUTH",
+        "EAST"
+      ],
       "correctStart": "WEST",
-      "goal": [1, 2],
-      "targetSequence": ["UP_RIGHT", "DOWN_RIGHT"],
-      "walls": [[[1, 2], [1, 3]]]
+      "goal": [
+        1,
+        2
+      ],
+      "targetSequence": [
+        "UP_RIGHT",
+        "DOWN_RIGHT"
+      ],
+      "walls": [
+        [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ]
+        ],
+        [
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      ]
     },
     {
       "id": "level_03",
-      "title": "Triple giro",
+      "title": "Cuatro compuertas",
       "size": 5,
       "correctStart": "SOUTH",
-      "goal": [2, 3],
-      "targetSequence": ["UP_LEFT", "UP_RIGHT", "UP_LEFT"],
-      "walls": [[[1, 3], [2, 3]], [[2, 1], [2, 2]], [[2, 3], [2, 4]], [[4, 3], [4, 4]]]
+      "goal": [
+        2,
+        3
+      ],
+      "targetSequence": [
+        "UP_LEFT",
+        "UP_RIGHT",
+        "UP_LEFT"
+      ],
+      "walls": [
+        [
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ],
+        [
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            2
+          ]
+        ],
+        [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        [
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            4
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "level_04",
+      "title": "Seis compuertas",
+      "size": 5,
+      "starts": [
+        "NORTH",
+        "NE",
+        "EAST",
+        "SOUTH",
+        "SW",
+        "WEST"
+      ],
+      "entries": {
+        "NE": [
+          2,
+          0
+        ],
+        "SW": [
+          2,
+          4
+        ]
+      },
+      "correctStart": "SW",
+      "goal": [
+        3,
+        2
+      ],
+      "targetSequence": [
+        "UP_RIGHT",
+        "DOWN_RIGHT",
+        "UP_RIGHT"
+      ],
+      "walls": [
+        [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ]
+        ],
+        [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        [
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ]
+        ],
+        [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ]
+        ],
+        [
+          [
+            3,
+            3
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        [
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ]
+        ],
+        [
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            4
+          ]
+        ]
+      ]
     }
   ]
 }

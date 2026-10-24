@@ -9,12 +9,24 @@ export const MOVES = {
   DOWN_RIGHT: [1, 0],
 };
 
-// Clockwise order; index matters for rotation (see game.js).
+// The four corner entries (compuertas). Levels may use a subset via `starts`, and add
+// extra entries on the grid edge via `entries: { name: [x, y] }`.
 export const STARTS = ['NORTH', 'EAST', 'SOUTH', 'WEST'];
+
+export const levelStarts = (level) => level.starts ?? STARTS;
 
 export function startCell(size, start) {
   const m = size - 1;
   return { NORTH: [0, 0], EAST: [m, 0], SOUTH: [m, m], WEST: [0, m] }[start];
+}
+
+export const entryCell = (level, name) => level.entries?.[name] ?? startCell(level.size, name);
+
+// Angle (degrees) of an entry around the board center, before the visual rotation.
+export function entryAngle(level, name) {
+  const c = (level.size - 1) / 2;
+  const [x, y] = entryCell(level, name);
+  return (Math.atan2(y - c, x - c) * 180) / Math.PI;
 }
 
 const key = ([x, y]) => `${x},${y}`;
@@ -26,7 +38,7 @@ const same = (a, b) => a[0] === b[0] && a[1] === b[1];
 // (wall or grid boundary); blockedAt is the index of the move that failed.
 export function trace(level, start, seq, { ignoreWalls = false } = {}) {
   const walls = new Set(level.walls.map(([a, b]) => edgeKey(a, b)));
-  let cur = startCell(level.size, start);
+  let cur = entryCell(level, start);
   const points = [cur];
   for (let i = 0; i < seq.length; i++) {
     const [dx, dy] = MOVES[seq[i]];
@@ -53,12 +65,23 @@ function allSequences(len) {
 
 // Returns a list of human-readable problems; empty means the level is playable.
 export function validateLevel(level) {
+  if (!level || typeof level !== 'object') return ['nivel vacío o inválido'];
   const errors = [];
-  const L = level?.targetSequence?.length;
+  const L = level.targetSequence?.length;
   if (!Number.isInteger(level?.size) || level.size < 2) errors.push('size debe ser un entero ≥ 2');
   if (!Array.isArray(level?.targetSequence) || L < 1 || L > 3) errors.push('targetSequence debe tener de 1 a 3 movimientos');
   else if (level.targetSequence.some((m) => !MOVES[m])) errors.push('targetSequence contiene movimientos desconocidos');
-  if (!STARTS.includes(level?.correctStart)) errors.push(`correctStart desconocido: ${level?.correctStart}`);
+  const onEdge = ([x, y]) => inside(level.size, [x, y]) && (x === 0 || y === 0 || x === level.size - 1 || y === level.size - 1);
+  if (level?.starts !== undefined && !(Array.isArray(level.starts) && level.starts.length)) errors.push('starts debe ser una lista no vacía');
+  else {
+    const names = levelStarts(level ?? {});
+    for (const n of names) {
+      const cell = STARTS.includes(n) || level?.entries?.[n] ? entryCell(level, n) : null;
+      if (!cell || !onEdge(cell)) errors.push(`entrada inválida (debe estar en el borde): ${n}`);
+    }
+    if (new Set(names.map((n) => key(entryCell(level, n) ?? []))).size !== names.length) errors.push('dos entradas comparten casilla');
+    if (!names.includes(level?.correctStart)) errors.push(`correctStart desconocido: ${level?.correctStart}`);
+  }
   if (!Array.isArray(level?.goal) || !inside(level.size, level.goal)) errors.push('goal fuera del tablero');
   if (!Array.isArray(level?.walls)) errors.push('walls debe ser una lista');
   else for (const [a, b] of level.walls) {
@@ -71,12 +94,12 @@ export function validateLevel(level) {
   if (!reachesGoal(level, level.correctStart, level.targetSequence)) {
     errors.push('la secuencia objetivo no llega al destino desde el inicio correcto');
   }
-  for (const s of STARTS) {
+  for (const s of levelStarts(level)) {
     if (s !== level.correctStart && trace(level, s, level.targetSequence).blockedAt === null) {
       errors.push(`el inicio ${s} no choca con ningún muro usando la secuencia objetivo`);
     }
   }
-  for (const s of STARTS) for (const seq of allSequences(L)) {
+  for (const s of levelStarts(level)) for (const seq of allSequences(L)) {
     const isTarget = s === level.correctStart && seq.join() === level.targetSequence.join();
     if (!isTarget && reachesGoal(level, s, seq)) errors.push(`solución alternativa: ${s} + ${seq.join(', ')}`);
   }

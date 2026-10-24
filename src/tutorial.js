@@ -1,98 +1,57 @@
-// Guided tour: dims the page, spotlights one element per step and explains it.
-// Opens automatically on the first visit; the header button replays it.
+// Interactive tutorial on the tutorial level (one entry, two routes, one blocked).
+// Info steps advance with "Siguiente"; action steps wait for the player to click the
+// highlighted control. Script: take the blocked route, fail, scan, then take the open one.
+// The moves below match the "tutorial" entry in levels.json.
 
-const STEPS = [
-  {
-    title: '¡Bienvenido a Quantum Maze!',
-    text: 'Tu misión: llevar un rayo de luz hasta la estrella ★. El problema es que el laberinto está <b>oculto</b>: no ves los muros. Tendrás que deducir el camino con pistas.',
-  },
-  {
-    target: '#board',
-    title: 'El tablero',
-    text: 'Es un laberinto de caminos en diagonal. Hay <b>4 puntos de inicio</b> (N, E, S, O) en el borde del círculo y un destino ★. Solo <b>uno</b> de los inicios lleva a la estrella.',
-  },
-  {
-    target: '.start.selected',
-    title: 'Tu inicio',
-    text: 'El inicio que está <b>abajo</b> es el que eliges. Toca otro inicio o usa <b>Rotar</b> para cambiarlo; el tablero gira, pero el laberinto no cambia.',
-  },
-  {
-    target: '#slots',
-    title: 'La secuencia',
-    text: 'Cada casilla es un movimiento. Tienes que llenarlas todas. Toca una casilla para cambiar solo ese movimiento.',
-  },
-  {
-    target: '.moves',
-    title: 'Las flechas',
-    text: 'Cada flecha mueve el rayo <b>una casilla</b> en esa dirección. Si giras el tablero, las flechas giran con él. Cuando la secuencia está completa, la siguiente flecha empieza una nueva.',
-  },
-  {
-    target: '#play',
-    title: 'Play',
-    text: 'Dibuja tu secuencia desde los <b>4 inicios a la vez</b>, como si no hubiera muros. Ganas si la secuencia es la correcta <b>y</b> el inicio de abajo es el correcto.',
-  },
-  {
-    target: '#match',
-    title: 'Coincidencia',
-    text: 'Te dice qué porcentaje de tus movimientos está en la posición correcta. Ejemplo: si la solución es ↖ ↗ ↘ y pones ↖ ↙ ↘, aciertas 2 de 3 = <b>66,7 %</b>. Es una pista del juego, <b>no</b> una probabilidad.',
-  },
-  {
-    target: '#scan',
-    title: 'Scanner',
-    text: 'Durante 2 segundos muestra en <b>rojo</b> el muro donde choca cada rayo. Si el rayo de un inicio no choca, ¡vas por buen camino! Cada uso resta puntos, úsalo con cabeza.',
-  },
-  {
-    target: '.actions.secondary',
-    title: 'Rotar y Reiniciar',
-    text: '<b>Rotar</b> cambia qué inicio está abajo. <b>Reiniciar</b> borra la secuencia, el tiempo y los contadores del nivel.',
-  },
-  {
-    target: '.modes',
-    title: 'Niveles y Reto diario',
-    text: 'Empieza por los 3 niveles. Después juega el <b>Reto diario</b>: un laberinto nuevo cada día, igual para todos. Resuélvelo días seguidos para subir tu racha 🔥.',
-  },
-  {
-    title: '¿Y lo cuántico?',
-    text: 'Encontrar el inicio correcto probando uno por uno toma en promedio 2,5 intentos. Una computadora cuántica no "prueba todo a la vez": usa el <b>algoritmo de Grover</b> para cambiar las probabilidades hasta que el inicio correcto sale casi seguro. Al ganar un nivel, abre <b>«¿Y si fuera cuántico?»</b> para verlo con datos de Qiskit.',
-  },
+export const TUTORIAL_STEPS = [
+  { target: '#board', title: 'Objetivo', text: 'Lleva el rayo desde la compuerta <b>S</b> hasta ★. Hay 2 caminos, pero los muros están ocultos.' },
+  { target: '#slots', title: 'Secuencia', text: 'Cada casilla es un movimiento. Este nivel usa 2.' },
+  { target: '[data-move="UP_RIGHT"]', act: true, title: 'Camino derecho', text: 'Pulsa <b>↗</b>.' },
+  { target: '[data-move="UP_LEFT"]', act: true, title: 'Camino derecho', text: 'Ahora pulsa <b>↖</b>.' },
+  { target: '#play', act: true, wait: 1100, title: 'Play', text: 'Pulsa <b>Play</b> para probar tu secuencia.' },
+  { target: '#board', title: 'No ganaste', text: 'Play dibuja tu ruta <b>sin muros</b>, por eso parece llegar. Pero algo la bloquea. El <b>%</b> indica cuántos movimientos están en su lugar.' },
+  { target: '#scan', act: true, wait: 700, title: 'Scanner', text: 'Pulsa <b>Scanner</b> para ver dónde choca.' },
+  { target: '#board', title: '¡Muro!', text: 'La marca <b>roja</b> es el muro donde choca el rayo. Este camino está bloqueado.' },
+  { target: '[data-move="UP_LEFT"]', act: true, title: 'Otro camino', text: 'Prueba el izquierdo: pulsa <b>↖</b>.' },
+  { target: '[data-move="UP_RIGHT"]', act: true, title: 'Otro camino', text: 'Ahora pulsa <b>↗</b>.' },
+  { target: '#play', act: true, wait: 1100, title: '¡Último paso!', text: 'Pulsa <b>Play</b>.' },
+  { target: '#board', title: '¡Ganaste!', text: 'La secuencia <b>↖ ↗</b> desde S llega a ★ sin chocar: el camino izquierdo no tiene muros. Ganas cuando la secuencia y la compuerta son las correctas (100 %).' },
 ];
 
-const DONE_KEY = 'quantum-maze-tutorial-done';
+// Short tour on level 1 (two gates): how to change the selected gate.
+export const GATE_STEPS = [
+  { target: '#board', title: 'Compuertas', text: 'Este nivel tiene <b>2 compuertas</b>. Juegas desde la de <b>abajo</b>, la que brilla.' },
+  { target: '.start:not(.selected)', act: true, wait: 450, title: 'Cambiar de compuerta', text: 'Toca la otra compuerta.' },
+  { target: '#rotate', act: true, wait: 450, title: 'Rotar', text: 'O pulsa <b>Rotar</b> para pasar a la siguiente.' },
+  { target: '#board', title: '¡Listo!', text: 'La compuerta de abajo es la elegida. Encuentra cuál llega a ★.' },
+];
 
-export function tutorialSeen() {
-  try { return localStorage.getItem(DONE_KEY) === '1'; } catch { return false; }
-}
-
-export function startTutorial() {
+// onClose runs when the tour ends (finished or skipped).
+export function startTutorial(STEPS, onClose = () => {}) {
   let i = 0;
+  let waiting = false;
   const root = document.createElement('div');
   root.className = 'tour';
   root.innerHTML = `
     <div class="tour-spot"></div>
-    <section class="tour-card" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+    <section class="tour-card" role="dialog" aria-labelledby="tour-title">
       <p class="tour-step"></p>
       <h2 id="tour-title"></h2>
       <p class="tour-text"></p>
       <div class="tour-nav">
-        <button data-tour="skip">Saltar</button>
+        <button data-tour="skip">Saltar tutorial</button>
         <span></span>
-        <button data-tour="prev">Anterior</button>
         <button data-tour="next" class="primary">Siguiente</button>
       </div>
     </section>`;
   document.body.appendChild(root);
   const spot = root.querySelector('.tour-spot');
   const card = root.querySelector('.tour-card');
+  const next = root.querySelector('[data-tour="next"]');
+  const target = () => document.querySelector(STEPS[i].target);
 
   function place() {
-    const step = STEPS[i];
-    const el = step.target && document.querySelector(step.target);
-    if (!el) {
-      spot.style.cssText = 'top:50%;left:50%;width:0;height:0';
-      card.dataset.pos = 'center';
-      return;
-    }
-    const r = el.getBoundingClientRect();
+    const r = target().getBoundingClientRect();
     const pad = 8;
     spot.style.cssText = `top:${r.top - pad}px;left:${r.left - pad}px;width:${r.width + pad * 2}px;height:${r.height + pad * 2}px`;
     // Card goes on the side of the screen the target is not on.
@@ -101,41 +60,57 @@ export function startTutorial() {
 
   function show() {
     const step = STEPS[i];
-    const el = step.target && document.querySelector(step.target);
-    el?.scrollIntoView({ block: 'center', behavior: 'instant' });
+    target().scrollIntoView({ block: 'center', behavior: 'instant' });
     root.querySelector('.tour-step').textContent = `Paso ${i + 1} de ${STEPS.length}`;
     root.querySelector('#tour-title').textContent = step.title;
     root.querySelector('.tour-text').innerHTML = step.text;
-    root.querySelector('[data-tour="prev"]').disabled = i === 0;
-    root.querySelector('[data-tour="next"]').textContent = i === STEPS.length - 1 ? '¡A jugar!' : 'Siguiente';
+    // Action steps let clicks through to the page; the guard below keeps them on the target.
+    root.classList.toggle('acting', !!step.act);
+    next.hidden = !!step.act;
     place();
-    root.querySelector('[data-tour="next"]').focus();
+    next.textContent = i === STEPS.length - 1 ? 'Terminar' : 'Siguiente';
+    if (!step.act) next.focus();
   }
 
   function close() {
-    try { localStorage.setItem(DONE_KEY, '1'); } catch { /* private mode: tour shows again next visit */ }
     removeEventListener('resize', place);
     removeEventListener('scroll', place, true);
     document.removeEventListener('keydown', onKey);
+    document.removeEventListener('click', guard, true);
     root.remove();
+    onClose();
   }
 
-  const go = (d) => {
-    if (i + d >= STEPS.length) return close();
-    i = Math.max(0, i + d);
+  function advance() {
+    if (i + 1 >= STEPS.length) return close();
+    i++;
     show();
-  };
+  }
+
+  // During an action step, only the highlighted control (and the card) accept clicks.
+  function guard(e) {
+    const step = STEPS[i];
+    if (!step.act || card.contains(e.target)) return;
+    if (waiting || !target().contains(e.target)) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    // Let the game handle this click first, then move on.
+    waiting = true;
+    setTimeout(() => { waiting = false; advance(); }, step.wait ?? 0);
+  }
+
   function onKey(e) {
     if (e.key === 'Escape') close();
-    if (e.key === 'ArrowRight') go(1);
-    if (e.key === 'ArrowLeft') go(-1);
+    if (e.key === 'ArrowRight' && !STEPS[i].act) advance();
   }
 
-  root.querySelector('[data-tour="next"]').onclick = () => go(1);
-  root.querySelector('[data-tour="prev"]').onclick = () => go(-1);
+  next.onclick = advance;
   root.querySelector('[data-tour="skip"]').onclick = close;
   addEventListener('resize', place);
   addEventListener('scroll', place, true);
   document.addEventListener('keydown', onKey);
+  document.addEventListener('click', guard, true);
   show();
 }
