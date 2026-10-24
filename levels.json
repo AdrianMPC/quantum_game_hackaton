@@ -1,0 +1,40 @@
+{
+  "defaults": {
+    "scannerDurationMs": 2000,
+    "scoreConfig": {
+      "baseScore": 1000,
+      "timePenaltyPerSecond": 2,
+      "playPenalty": 25,
+      "scannerPenalty": 10
+    }
+  },
+  "levels": [
+    {
+      "id": "level_01",
+      "title": "Primer pulso",
+      "size": 3,
+      "correctStart": "NORTH",
+      "goal": [1, 0],
+      "targetSequence": ["DOWN_RIGHT"],
+      "walls": [[[0, 2], [1, 2]], [[1, 0], [2, 0]]]
+    },
+    {
+      "id": "level_02",
+      "title": "Doble rebote",
+      "size": 4,
+      "correctStart": "WEST",
+      "goal": [1, 2],
+      "targetSequence": ["UP_RIGHT", "DOWN_RIGHT"],
+      "walls": [[[1, 2], [1, 3]]]
+    },
+    {
+      "id": "level_03",
+      "title": "Triple giro",
+      "size": 5,
+      "correctStart": "SOUTH",
+      "goal": [2, 3],
+      "targetSequence": ["UP_LEFT", "UP_RIGHT", "UP_LEFT"],
+      "walls": [[[1, 3], [2, 3]], [[2, 1], [2, 2]], [[2, 3], [2, 4]], [[4, 3], [4, 4]]]
+    }
+  ]
+}

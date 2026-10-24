@@ -1,0 +1,200 @@
+{
+  "qiskit": "2.6.1",
+  "seed": 42,
+  "shots": 1024,
+  "note": "Ideal (noiseless) simulation: Statevector for exact probabilities, StatevectorSampler for counts.",
+  "marked": {
+    "NORTH": {
+      "bits": "00",
+      "circuit": "     ┌───┐ ░ ┌───┐   ┌───┐ ░ ┌───┐┌───┐   ┌───┐┌───┐\nq_0: ┤ H ├─░─┤ X ├─■─┤ X ├─░─┤ H ├┤ X ├─■─┤ X ├┤ H ├\n     ├───┤ ░ ├───┤ │ ├───┤ ░ ├───┤├───┤ │ ├───┤├───┤\nq_1: ┤ H ├─░─┤ X ├─■─┤ X ├─░─┤ H ├┤ X ├─■─┤ X ├┤ H ├\n     └───┘ ░ └───┘   └───┘ ░ └───┘└───┘   └───┘└───┘",
+      "iterations": [
+        {
+          "probabilities": {
+            "NORTH": 0.25,
+            "EAST": 0.25,
+            "SOUTH": 0.25,
+            "WEST": 0.25
+          },
+          "counts": {
+            "NORTH": 268,
+            "EAST": 247,
+            "SOUTH": 247,
+            "WEST": 262
+          }
+        },
+        {
+          "probabilities": {
+            "NORTH": 1.0,
+            "EAST": 0.0,
+            "SOUTH": 0.0,
+            "WEST": 0.0
+          },
+          "counts": {
+            "NORTH": 1024,
+            "EAST": 0,
+            "SOUTH": 0,
+            "WEST": 0
+          }
+        },
+        {
+          "probabilities": {
+            "NORTH": 0.25,
+            "EAST": 0.25,
+            "SOUTH": 0.25,
+            "WEST": 0.25
+          },
+          "counts": {
+            "NORTH": 268,
+            "EAST": 247,
+            "SOUTH": 247,
+            "WEST": 262
+          }
+        }
+      ]
+    },
+    "EAST": {
+      "bits": "01",
+      "circuit": "     ┌───┐ ░               ░ ┌───┐┌───┐   ┌───┐┌───┐\nq_0: ┤ H ├─░───────■───────░─┤ H ├┤ X ├─■─┤ X ├┤ H ├\n     ├───┤ ░ ┌───┐ │ ┌───┐ ░ ├───┤├───┤ │ ├───┤├───┤\nq_1: ┤ H ├─░─┤ X ├─■─┤ X ├─░─┤ H ├┤ X ├─■─┤ X ├┤ H ├\n     └───┘ ░ └───┘   └───┘ ░ └───┘└───┘   └───┘└───┘",
+      "iterations": [
+        {
+          "probabilities": {
+            "NORTH": 0.25,
+            "EAST": 0.25,
+            "SOUTH": 0.25,
+            "WEST": 0.25
+          },
+          "counts": {
+            "NORTH": 268,
+            "EAST": 247,
+            "SOUTH": 247,
+            "WEST": 262
+          }
+        },
+        {
+          "probabilities": {
+            "NORTH": 0.0,
+            "EAST": 1.0,
+            "SOUTH": 0.0,
+            "WEST": 0.0
+          },
+          "counts": {
+            "NORTH": 0,
+            "EAST": 1024,
+            "SOUTH": 0,
+            "WEST": 0
+          }
+        },
+        {
+          "probabilities": {
+            "NORTH": 0.25,
+            "EAST": 0.25,
+            "SOUTH": 0.25,
+            "WEST": 0.25
+          },
+          "counts": {
+            "NORTH": 268,
+            "EAST": 247,
+            "SOUTH": 247,
+            "WEST": 262
+          }
+        }
+      ]
+    },
+    "SOUTH": {
+      "bits": "10",
+      "circuit": "     ┌───┐ ░ ┌───┐   ┌───┐ ░ ┌───┐┌───┐   ┌───┐┌───┐\nq_0: ┤ H ├─░─┤ X ├─■─┤ X ├─░─┤ H ├┤ X ├─■─┤ X ├┤ H ├\n     ├───┤ ░ └───┘ │ └───┘ ░ ├───┤├───┤ │ ├───┤├───┤\nq_1: ┤ H ├─░───────■───────░─┤ H ├┤ X ├─■─┤ X ├┤ H ├\n     └───┘ ░               ░ └───┘└───┘   └───┘└───┘",
+      "iterations": [
+        {
+          "probabilities": {
+            "NORTH": 0.25,
+            "EAST": 0.25,
+            "SOUTH": 0.25,
+            "WEST": 0.25
+          },
+          "counts": {
+            "NORTH": 268,
+            "EAST": 247,
+            "SOUTH": 247,
+            "WEST": 262
+          }
+        },
+        {
+          "probabilities": {
+            "NORTH": 0.0,
+            "EAST": 0.0,
+            "SOUTH": 1.0,
+            "WEST": 0.0
+          },
+          "counts": {
+            "NORTH": 0,
+            "EAST": 0,
+            "SOUTH": 1024,
+            "WEST": 0
+          }
+        },
+        {
+          "probabilities": {
+            "NORTH": 0.25,
+            "EAST": 0.25,
+            "SOUTH": 0.25,
+            "WEST": 0.25
+          },
+          "counts": {
+            "NORTH": 268,
+            "EAST": 247,
+            "SOUTH": 247,
+            "WEST": 262
+          }
+        }
+      ]
+    },
+    "WEST": {
+      "bits": "11",
+      "circuit": "     ┌───┐ ░     ░ ┌───┐┌───┐   ┌───┐┌───┐\nq_0: ┤ H ├─░──■──░─┤ H ├┤ X ├─■─┤ X ├┤ H ├\n     ├───┤ ░  │  ░ ├───┤├───┤ │ ├───┤├───┤\nq_1: ┤ H ├─░──■──░─┤ H ├┤ X ├─■─┤ X ├┤ H ├\n     └───┘ ░     ░ └───┘└───┘   └───┘└───┘",
+      "iterations": [
+        {
+          "probabilities": {
+            "NORTH": 0.25,
+            "EAST": 0.25,
+            "SOUTH": 0.25,
+            "WEST": 0.25
+          },
+          "counts": {
+            "NORTH": 268,
+            "EAST": 247,
+            "SOUTH": 247,
+            "WEST": 262
+          }
+        },
+        {
+          "probabilities": {
+            "NORTH": 0.0,
+            "EAST": 0.0,
+            "SOUTH": 0.0,
+            "WEST": 1.0
+          },
+          "counts": {
+            "NORTH": 0,
+            "EAST": 0,
+            "SOUTH": 0,
+            "WEST": 1024
+          }
+        },
+        {
+          "probabilities": {
+            "NORTH": 0.25,
+            "EAST": 0.25,
+            "SOUTH": 0.25,
+            "WEST": 0.25
+          },
+          "counts": {
+            "NORTH": 268,
+            "EAST": 247,
+            "SOUTH": 247,
+            "WEST": 262
+          }
+        }
+      ]
+    }
+  }
+}
