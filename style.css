@@ -29,7 +29,9 @@ h1 { margin: 0; font-size: 1.4rem; letter-spacing: .04em; color: var(--accent); 
 }
 main { display: grid; gap: 16px; }
 .controls { text-align: center; }
-.controls .slots, .controls .moves, .controls .actions { justify-content: center; }
+.controls .slots, .controls .moves, .controls .actions, .seq-row { justify-content: center; }
+.seq-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; }
+.match { color: var(--gold); font-size: 1.4rem; min-width: 4ch; }
 .help { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 4px 16px 8px; }
 
 #board { width: 100%; max-width: min(520px, 44vh); margin: 0 auto; display: block; }
@@ -96,8 +98,7 @@ button.primary { background: var(--accent); color: #04121c; font-weight: 700; bo
   .controls { padding: 10px 12px; }
   .slots, .moves, .actions { margin: 8px 0; gap: 6px; }
   .moves button, .slot { width: 46px; height: 46px; font-size: 1.3rem; }
-  .actions { display: grid; grid-template-columns: repeat(4, 1fr); }
-  .actions button { padding: 8px 2px; font-size: .8rem; white-space: nowrap; }
+  .main-actions button { padding: 12px 6px; font-size: 1.05rem; }
   dialog { padding: 14px; }
   .bar { grid-template-columns: 64px 1fr 84px; font-size: .78rem; }
 }

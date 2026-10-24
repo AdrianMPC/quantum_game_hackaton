@@ -68,6 +68,7 @@ function render() {
   $('plays').textContent = g.plays;
   $('scans').textContent = g.scans;
   $('message').textContent = g.message;
+  $('match').textContent = g.matchPct === null ? '–' : `${g.matchPct} %`;
   $('streak').textContent = daily.currentStreak(streakState, today);
   $('mode-levels').classList.toggle('active', mode === 'levels');
   $('mode-daily').classList.toggle('active', mode === 'daily');

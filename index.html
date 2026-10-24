@@ -30,7 +30,10 @@
     <svg id="board" viewBox="-125 -125 250 250" role="img" aria-label="Tablero circular con laberinto oculto"></svg>
 
     <section class="controls">
-      <div id="slots" class="slots" aria-label="Secuencia de movimientos"></div>
+      <div class="seq-row">
+        <div id="slots" class="slots" aria-label="Secuencia de movimientos"></div>
+        <b id="match" class="match" title="Coincidencia de secuencia: comparación clásica posición por posición con la solución. No es una probabilidad cuántica." aria-label="Coincidencia de secuencia">–</b>
+      </div>
       <div class="moves" aria-label="Movimientos">
         <button data-move="UP_LEFT" aria-label="Arriba-izquierda"><span>↖</span></button>
         <button data-move="UP_RIGHT" aria-label="Arriba-derecha"><span>↗</span></button>

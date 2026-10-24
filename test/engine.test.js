@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
-import { validateLevel, score, STARTS } from '../src/engine.js';
+import { validateLevel, match, score, STARTS } from '../src/engine.js';
 import { dailyLevel, recordSolve, currentStreak, todayKey, puzzleNumber } from '../src/daily.js';
 import { createGame, setMove, play, scan, settle, rotate, selectStart, reset, selectedStart } from '../src/game.js';
 
@@ -19,6 +19,11 @@ test('broken level reports errors without throwing', () => {
   assert.ok(validateLevel({ ...lvl1, goal: [9, 9] }).length > 0);
   assert.ok(validateLevel({ ...lvl1, targetSequence: ['UP_LEFT', 'UP_LEFT', 'UP_LEFT', 'UP_LEFT'] }).length > 0);
   assert.ok(validateLevel(null).length > 0);
+});
+
+test('match follows spec example', () => {
+  assert.equal(match(['UP_LEFT', 'DOWN_LEFT', 'DOWN_RIGHT'], ['UP_LEFT', 'UP_RIGHT', 'DOWN_RIGHT']), 66.7);
+  assert.equal(match([], []), null);
 });
 
 test('score clamps at zero', () => {

@@ -1,5 +1,5 @@
 // Level state machine. No DOM: main.js calls these and re-renders.
-import { STARTS, trace, score } from './engine.js';
+import { STARTS, trace, match, score } from './engine.js';
 
 export function createGame(level, defaults, now = Date.now) {
   const g = {
@@ -22,6 +22,7 @@ export function reset(g) {
     startedAt: g.now(),
     idealPaths: null, // start -> points, set by Play
     collisions: null, // start -> {points, blockedAt}, set by Scanner
+    matchPct: null,
     message: '',
     result: null,
   });
@@ -56,6 +57,7 @@ export function play(g) {
   g.message = '';
   g.plays++;
   g.idealPaths = Object.fromEntries(STARTS.map((s) => [s, trace(g.level, s, g.seq, { ignoreWalls: true }).points]));
+  g.matchPct = match(g.seq, g.level.targetSequence);
   const won = g.seq.join() === g.level.targetSequence.join() && selectedStart(g) === g.level.correctStart;
   if (won) {
     const seconds = Math.round((g.now() - g.startedAt) / 1000);
@@ -76,6 +78,7 @@ export function scan(g) {
   g.message = '';
   g.scans++;
   g.idealPaths = Object.fromEntries(STARTS.map((s) => [s, trace(g.level, s, g.seq, { ignoreWalls: true }).points]));
+  g.matchPct = match(g.seq, g.level.targetSequence);
   g.collisions = Object.fromEntries(STARTS.map((s) => [s, trace(g.level, s, g.seq)]));
   g.status = 'SCANNING';
 }
